@@ -1,66 +1,76 @@
 {
   "id": "gate",
-  "name": "The Processional Way",
+  "name": "The Open Plain",
   "free": true,
   "requiresSensor": false,
 
   "_comment": [
-    "The open area. Geometry here mirrors the Blender scene the panoramas were",
-    "rendered from - build_demo.py places wall panels 28.6m long and 7.6m tall",
-    "at x = +/-15, stepping down the avenue every 35.6m - so the collision and",
-    "the backdrop agree with each other.",
+    "The open area, rebuilt as real geometry. There is no panorama any more:",
+    "a backdrop is only correct from the single point it was rendered from, so",
+    "it held the player inside a 26x52m box while the gate it showed stayed",
+    "exactly as far away however long they walked. Everything here is now a",
+    "real model on a real plain, and the only thing you cannot walk through is",
+    "the sites themselves.",
     "",
-    "The panorama is used as a distant backdrop only. It has no parallax, so",
-    "anything close enough to walk past has to exist as real geometry or the",
-    "illusion breaks the moment you move."
+    "Site positions are laid out so no two are in line from the spawn point -",
+    "each one has to be walked to, and walking to one puts another in view."
   ],
 
   "eye": 1.65,
-  "spawn": { "x": 0, "y": -108, "heading": 1.5707963 },
+  "spawn": { "x": 0, "y": 0, "heading": 1.5707963 },
 
-  "_bounds_comment": [
-    "Centred on the point the panorama was rendered from. A backdrop has no",
-    "parallax, so it is only truly correct from that one spot and degrades with",
-    "distance from it - walking 105m up the avenue meant the gate stayed exactly",
-    "as far away as when you started, and the walkable area simply ran out with",
-    "nothing there. A tight region around the render point keeps the illusion",
-    "intact and makes the edge symmetric instead of a surprise at one end.",
-    "This opens back up the moment the gate exists as real geometry."
-  ],
-  "bounds": { "minX": -13.2, "maxX": 13.2, "minY": -134, "maxY": -82 },
+  "bounds": { "minX": -190, "maxX": 190, "minY": -190, "maxY": 190 },
 
   "ground": { "colour": "#b9a888", "roughness": 0.96 },
 
-  "backdrop": {
-    "panorama": "node_a.jpg",
-    "renderedAt": { "x": 0, "y": -108 },
-    "_comment": "Rendered from this point; the further the player walks from it, the more the backdrop lies. Bounds are kept tight enough that it stays unnoticed."
+  "sky": {
+    "_comment": "Desert Skybox Pack, sky 3 - the brightest and least saturated of the six, so it lights the stone without drowning the sand in orange. 8K down to 4K: it is a sky, and nobody inspects it. It doubles as the environment map, so the geometry is lit by the sky actually behind it.",
+    "image": "sky/desert.webp"
   },
 
-  "_walls_comment": [
-    "Empty on purpose. These were untextured blockout boxes standing in front of",
-    "the same walls already painted into the backdrop - the avenue was being",
-    "drawn twice, once badly. The collision machinery that reads this stays in",
-    "place and is still covered by the tests, so real decimated wall geometry",
-    "drops straight back in here when it is exported from gate.blend."
+  "sites": [
+    {
+      "id": "tulum", "label": "Tulum", "model": "sites/tulum.glb",
+      "x": 0, "y": 62, "heading": 3.14159,
+      "radius": 5.5, "height": 8.0
+    },
+    {
+      "id": "stonehenge", "label": "Stonehenge", "model": "sites/stonehenge.glb",
+      "x": -78, "y": 14, "heading": 0.4,
+      "radius": 9.0, "height": 7.0
+    },
+    {
+      "id": "moai", "label": "Moai", "model": "sites/moai.glb",
+      "x": 44, "y": -52, "heading": 2.3,
+      "radius": 2.6, "height": 6.5
+    },
+    {
+      "id": "palenque", "label": "Palenque", "model": "sites/palenque.glb",
+      "x": 96, "y": 78, "heading": 3.6,
+      "radius": 22.0, "height": 18.0
+    },
+    {
+      "id": "babylon", "label": "Gardens of Babylon", "model": "sites/babylon.glb",
+      "x": -84, "y": -104, "heading": 0.9,
+      "radius": 30.0, "height": 26.0
+    }
   ],
+
+  "_sites_comment": [
+    "radius is the circle you cannot walk into, taken from each model's measured",
+    "footprint in build_monuments.py and then pulled in a little - the footprint",
+    "is a box round the widest part, and blocking on that would stop you well",
+    "short of anything you can see."
+  ],
+
   "walls": [],
 
   "move": {
     "walkSpeed": 1.5,
     "runSpeed": 3.6,
     "turnRate": 3.2,
-    "_comment": "Metres per second, matched to the clips in remy.glb: the walk covers 1.19 m/s and the run 3.61, so both play near 1x and the feet do not skate. Backwards and sideways are scaled down in Walker.update to suit their own clips."
+    "_comment": "Metres per second, matched to the clips in remy.glb: the walk covers 1.16 m/s and the run 3.44, so both play near 1x and the feet do not skate. Backwards and sideways are scaled down in Walker.update to suit their own clips."
   },
 
-  "portals": [
-    {
-      "id": "arcadia",
-      "label": "Arcadia",
-      "x": 0, "y": -6, "radius": 3.5,
-      "heading": 1.5707963,
-      "requiresSensor": false,
-      "_comment": "The gate mouth. Walking here offers entry; the sensor requirement flips on later without touching this code."
-    }
-  ]
+  "portals": []
 }

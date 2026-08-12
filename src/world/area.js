@@ -33,6 +33,28 @@ export function clampToBounds(x, y) {
 }
 
 const RADIUS = 0.35;
+
+/**
+ * The sites, as circles you cannot walk into.
+ *
+ * Circles rather than boxes because these are buildings you walk around, and a
+ * box would stop you at a corner you can plainly see past. This mirrors
+ * pushOutOfSites in the client exactly - both read the same world.json, so
+ * neither can drift from the other about where a monument is.
+ */
+const SITES = (raw.sites || []).map((s) => ({ x: s.x, y: s.y, r: s.radius }));
+
+export function ejectFromSites(x, y) {
+  for (const s of SITES) {
+    const dx = x - s.x, dy = y - s.y;
+    const d = Math.hypot(dx, dy);
+    const min = s.r + RADIUS;
+    if (d >= min) continue;
+    if (d < 1e-6) return { x: s.x + min, y: s.y };
+    return { x: s.x + (dx / d) * min, y: s.y + (dy / d) * min };
+  }
+  return { x, y };
+}
 const BLOCKERS = (raw.walls || []).map((w) => ({
   minX: w.x - w.w / 2 - RADIUS, maxX: w.x + w.w / 2 + RADIUS,
   minY: w.y - w.d / 2 - RADIUS, maxY: w.y + w.d / 2 + RADIUS,
@@ -73,5 +95,6 @@ export function validateMove(prev, next, dtSeconds) {
     ? { x: next.x, y: next.y }
     : { x: prev.x + dx * (limit / (dist || 1)), y: prev.y + dy * (limit / (dist || 1)) };
   const inside = clampToBounds(capped.x, capped.y);
-  return ejectFromWalls(inside.x, inside.y);
+  const clear = ejectFromWalls(inside.x, inside.y);
+  return ejectFromSites(clear.x, clear.y);
 }

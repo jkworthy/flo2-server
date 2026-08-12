@@ -1,6 +1,6 @@
 import { Room } from "colyseus";
 import { Player, ArcadiaState } from "./schema/Player.js";
-import { WORLD, clampToBounds, validateMove, ejectFromWalls } from "../world/area.js";
+import { WORLD, clampToBounds, validateMove, ejectFromWalls, ejectFromSites } from "../world/area.js";
 import { nextSessionAt, meditationFor, arcadiaBonus } from "../world/sessions.js";
 
 export class ArcadiaRoom extends Room {
@@ -138,6 +138,8 @@ export class ArcadiaRoom extends Room {
       if (Math.abs(b.x - cx) > 1e-6 || Math.abs(b.y - cy) > 1e-6) return null;
       const e = ejectFromWalls(cx, cy);
       if (Math.abs(e.x - cx) > 1e-6 || Math.abs(e.y - cy) > 1e-6) return null;
+      const t = ejectFromSites(cx, cy);
+      if (Math.abs(t.x - cx) > 1e-6 || Math.abs(t.y - cy) > 1e-6) return null;
       return clear(cx, cy) ? { x: cx, y: cy } : null;
     };
 
