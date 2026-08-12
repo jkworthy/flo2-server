@@ -40,10 +40,10 @@
   ],
 
   "move": {
-    "walkSpeed": 2.6,
-    "runSpeed": 5.2,
+    "walkSpeed": 1.7,
+    "runSpeed": 2.5,
     "turnRate": 3.2,
-    "_comment": "walkSpeed is metres per second. The server validates against runSpeed plus a tolerance rather than trusting the client."
+    "_comment": "Metres per second, bounded by what the walk clip can honestly depict. It covers 1.16 m/s, and past about 2.2x playback a walk cycle stops reading as walking, so 2.5 is the ceiling before the feet skate. Raise runSpeed once a real run clip is in remy.glb."
   },
 
   "portals": [
