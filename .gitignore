@@ -1,0 +1,7 @@
+node_modules/
+.DS_Store
+*.log
+
+# Holds the Colyseus Cloud deploy token. Never commit it - this repo is pushed
+# to GitHub for Cloud to pull from, so a token in here is a published token.
+.colyseus-cloud.json

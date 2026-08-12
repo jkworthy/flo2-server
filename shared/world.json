@@ -1,0 +1,59 @@
+{
+  "id": "gate",
+  "name": "The Processional Way",
+  "free": true,
+  "requiresSensor": false,
+
+  "_comment": [
+    "The open area. Geometry here mirrors the Blender scene the panoramas were",
+    "rendered from - build_demo.py places wall panels 28.6m long and 7.6m tall",
+    "at x = +/-15, stepping down the avenue every 35.6m - so the collision and",
+    "the backdrop agree with each other.",
+    "",
+    "The panorama is used as a distant backdrop only. It has no parallax, so",
+    "anything close enough to walk past has to exist as real geometry or the",
+    "illusion breaks the moment you move."
+  ],
+
+  "eye": 1.65,
+  "spawn": { "x": 0, "y": -108, "heading": 1.5707963 },
+
+  "bounds": { "minX": -13.2, "maxX": 13.2, "minY": -142, "maxY": -3 },
+
+  "ground": { "colour": "#b9a888", "roughness": 0.96 },
+
+  "backdrop": {
+    "panorama": "node_a.jpg",
+    "renderedAt": { "x": 0, "y": -108 },
+    "_comment": "Rendered from this point; the further the player walks from it, the more the backdrop lies. Bounds are kept tight enough that it stays unnoticed."
+  },
+
+  "walls": [
+    { "x": -15, "y": -20,    "w": 3, "d": 28.6, "h": 7.6 },
+    { "x":  15, "y": -20,    "w": 3, "d": 28.6, "h": 7.6 },
+    { "x": -15, "y": -55.6,  "w": 3, "d": 28.6, "h": 7.6 },
+    { "x":  15, "y": -55.6,  "w": 3, "d": 28.6, "h": 7.6 },
+    { "x": -15, "y": -91.2,  "w": 3, "d": 28.6, "h": 7.6 },
+    { "x":  15, "y": -91.2,  "w": 3, "d": 28.6, "h": 7.6 },
+    { "x": -15, "y": -126.8, "w": 3, "d": 28.6, "h": 7.6 },
+    { "x":  15, "y": -126.8, "w": 3, "d": 28.6, "h": 7.6 }
+  ],
+
+  "move": {
+    "walkSpeed": 2.6,
+    "runSpeed": 5.2,
+    "turnRate": 3.2,
+    "_comment": "walkSpeed is metres per second. The server validates against runSpeed plus a tolerance rather than trusting the client."
+  },
+
+  "portals": [
+    {
+      "id": "arcadia",
+      "label": "Arcadia",
+      "x": 0, "y": -6, "radius": 3.5,
+      "heading": 1.5707963,
+      "requiresSensor": false,
+      "_comment": "The gate mouth. Walking here offers entry; the sensor requirement flips on later without touching this code."
+    }
+  ]
+}

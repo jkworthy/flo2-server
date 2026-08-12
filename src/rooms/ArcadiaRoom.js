@@ -1,0 +1,238 @@
+import { Room } from "colyseus";
+import { Player, ArcadiaState } from "./schema/Player.js";
+import { WORLD, clampToBounds, validateMove } from "../world/area.js";
+import { nextSessionAt, meditationFor, arcadiaBonus } from "../world/sessions.js";
+
+export class ArcadiaRoom extends Room {
+  onCreate() {
+    this.state = new ArcadiaState();
+    this.maxClients = 64;
+
+    this.session = null;          // { startAt, endsAt, meditation, eligible:Set, completed:Set }
+    this.lastChat = new Map();    // sessionId -> last message time, for rate limiting
+    this.lastMove = new Map();    // sessionId -> last move time, for speed validation
+    this.sessionTimer = null;
+    this.endTimer = null;
+
+    /* --- movement ------------------------------------------------------- */
+
+    this.onMessage("move", (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (!p || p.isMeditating) return;              // seated players do not move
+      const x = Number(msg?.x), y = Number(msg?.y);
+      if (!Number.isFinite(x) || !Number.isFinite(y)) return;
+
+      const now = Date.now();
+      const last = this.lastMove.get(client.sessionId) ?? now;
+      this.lastMove.set(client.sessionId, now);
+
+      // Clamped, not rejected: refusing a move leaves client and server
+      // disagreeing until the next tick, which the player sees as rubber-banding.
+      const ok = validateMove({ x: p.x, y: p.y }, { x, y }, (now - last) / 1000);
+      p.x = ok.x; p.y = ok.y;
+      const h = Number(msg?.heading);
+      if (Number.isFinite(h)) p.heading = h;
+      const sp = Number(msg?.speed);
+      if (Number.isFinite(sp)) p.speed = Math.max(0, Math.min(12, sp));
+    });
+
+    /* --- meditation ----------------------------------------------------- */
+
+    this.onMessage("meditation", (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (!p) return;
+      const want = !!msg?.isMeditating;
+
+      // Sitting is allowed anywhere - it is a thing a person can do. What the
+      // grove gates is *session eligibility*, checked at the bell in
+      // startSession(). Refusing to let someone sit by a wall served no purpose
+      // and made the pose look broken outside one node.
+      p.isMeditating = want;
+      this.refreshParticipants();
+    });
+
+    this.onMessage("xen_score", (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (!p) return;
+      const s = Number(msg?.xenScore);
+      if (Number.isFinite(s)) p.xenScore = Math.max(0, Math.min(100, s));
+    });
+
+    this.onMessage("xen_sensor_status", (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (p) p.xenSensorConnected = !!msg?.connected;
+    });
+
+    this.onMessage("meditation_complete", (client) => {
+      this.completeSession(client);
+    });
+
+    /* --- chat -----------------------------------------------------------
+       With movement griefing gone by construction, chat is the only abuse
+       surface left, so the limits are here from the start rather than bolted on
+       later: length capped, rate limited server-side, and muting is enforced by
+       the sender's own room rather than trusted to each listener. */
+    this.onMessage("chat", (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (!p) return;
+      const text = String(msg?.text ?? "").trim().slice(0, 240);
+      if (!text) return;
+
+      const now = Date.now();
+      const last = this.lastChat.get(client.sessionId) || 0;
+      if (now - last < 700) return;                 // ~1.4 messages a second
+      this.lastChat.set(client.sessionId, now);
+
+      this.broadcast("chat", {
+        from: client.sessionId,
+        name: p.displayName || "guest",
+        text,
+        at: now,
+      });
+    });
+
+    this.onMessage("avatar", (client, msg) => {
+      const p = this.state.players.get(client.sessionId);
+      if (!p || !msg) return;
+      for (const k of ["avatarBody","avatarHair","avatarOutfit","skinTone","hairColor","displayName"]) {
+        if (typeof msg[k] === "string" && msg[k].length <= 64) p[k] = msg[k];
+      }
+    });
+
+    this.scheduleNext();
+  }
+
+  /* --- session scheduling ------------------------------------------------ */
+
+  scheduleNext() {
+    const at = nextSessionAt();
+    const med = meditationFor(at);
+    this.state.nextSessionAt = at;
+    this.state.meditationFile = med.file;
+    this.state.meditationTitle = med.title;
+    this.state.sessionActive = false;
+
+    if (this.sessionTimer) this.clock.clear(this.sessionTimer);
+    this.sessionTimer = this.clock.setTimeout(() => this.startSession(), Math.max(0, at - Date.now()));
+    console.log(`[Arcadia] next session ${new Date(at).toISOString()} - ${med.title} (${med.duration}s)`);
+  }
+
+  startSession() {
+    const startAt = this.state.nextSessionAt;
+    const med = meditationFor(startAt);
+
+    // Eligibility is judged once, at the bell: in the grove, seated, sensor on.
+    const eligible = new Set();
+    this.state.players.forEach((p, id) => {
+      if (p.isMeditating && p.xenSensorConnected) eligible.add(id);
+    });
+
+    this.session = { startAt, endsAt: startAt + med.duration * 1000, meditation: med,
+                     eligible, completed: new Set() };
+
+    this.state.sessionActive = true;
+    this.state.sessionStartedAt = startAt;
+    this.state.sessionEndsAt = this.session.endsAt;
+    this.state.participantCount = eligible.size;
+
+    for (const client of this.clients) {
+      if (!eligible.has(client.sessionId)) continue;
+      client.send("session_start", {
+        file: med.file, title: med.title, duration: med.duration,
+        endsAt: this.session.endsAt, participants: eligible.size,
+      });
+    }
+    console.log(`[Arcadia] session started, ${eligible.size} participant(s)`);
+
+    if (this.endTimer) this.clock.clear(this.endTimer);
+    this.endTimer = this.clock.setTimeout(() => this.endSession(), med.duration * 1000 + 5000);
+  }
+
+  endSession() {
+    if (this.session) {
+      console.log(`[Arcadia] session ended, ${this.session.completed.size}/${this.session.eligible.size} completed`);
+    }
+    this.session = null;
+    this.state.sessionActive = false;
+    this.state.participantCount = 0;
+    this.scheduleNext();
+  }
+
+  completeSession(client) {
+    const s = this.session;
+    const p = this.state.players.get(client.sessionId);
+    if (!s || !p) return;
+    if (!s.eligible.has(client.sessionId)) return;      // was not in the circle at the bell
+    if (s.completed.has(client.sessionId)) return;      // no double-claiming
+    if (Date.now() < s.startAt + s.meditation.duration * 1000 * 0.9) {
+      // Claiming completion before the audio could plausibly have finished.
+      client.send("session_rejected", { reason: "too_early" });
+      return;
+    }
+
+    s.completed.add(client.sessionId);
+
+    // Everyone who has finished sees their group grow as others land, so the
+    // count is recomputed for each recipient rather than frozen at their own
+    // moment of completion.
+    for (const id of s.completed) {
+      const c = this.clients.find((c) => c.sessionId === id);
+      const q = this.state.players.get(id);
+      if (!c || !q) continue;
+      c.send("session_complete", {
+        ...arcadiaBonus(q.xenScore, s.completed.size - 1),
+        completed: s.completed.size,
+        eligible: s.eligible.size,
+      });
+    }
+  }
+
+  refreshParticipants() {
+    if (!this.session) return;
+    let n = 0;
+    this.state.players.forEach((p) => { if (p.isMeditating) n++; });
+    this.state.participantCount = n;
+  }
+
+  /* --- lifecycle --------------------------------------------------------- */
+
+  onJoin(client, options = {}) {
+    // Start the movement clock at join. Leaving it unset made the elapsed time
+    // on the very first move packet zero, which capped a player's opening step
+    // at 0.4m - they appeared to wade out of spawn before walking normally.
+    this.lastMove.set(client.sessionId, Date.now());
+    const p = new Player();
+    p.playerId = client.sessionId;
+    p.firebaseUid = options.firebaseUid || "";
+    p.displayName = (options.displayName || "").slice(0, 64);
+    const spawn = clampToBounds(WORLD.spawn.x, WORLD.spawn.y);
+    p.x = spawn.x; p.y = spawn.y;
+    p.heading = WORLD.spawn.heading;
+    p.speed = 0;
+    p.area = WORLD.id;
+    p.seat = -1;
+    p.isMeditating = false;
+    p.xenSensorConnected = false;
+    p.xenScore = 0;
+    p.avatarBody = options.avatarBody || "body_01";
+    p.avatarHair = options.avatarHair || "hair_01";
+    p.avatarOutfit = options.avatarOutfit || "outfit_01";
+    p.skinTone = options.skinTone || "#FFDBAC";
+    p.hairColor = options.hairColor || "#8B4513";
+    this.state.players.set(client.sessionId, p);
+    console.log(`[Arcadia] ${client.sessionId} joined at ${p.x.toFixed(1)},${p.y.toFixed(1)}`);
+  }
+
+  onLeave(client) {
+    this.state.players.delete(client.sessionId);
+    this.lastChat.delete(client.sessionId);
+    this.lastMove.delete(client.sessionId);
+    if (this.session) this.session.eligible.delete(client.sessionId);
+    this.refreshParticipants();
+  }
+
+  onDispose() {
+    if (this.sessionTimer) this.clock.clear(this.sessionTimer);
+    if (this.endTimer) this.clock.clear(this.endTimer);
+  }
+}
