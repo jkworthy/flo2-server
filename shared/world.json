@@ -40,10 +40,10 @@
   ],
 
   "move": {
-    "walkSpeed": 1.7,
-    "runSpeed": 2.5,
+    "walkSpeed": 1.5,
+    "runSpeed": 3.6,
     "turnRate": 3.2,
-    "_comment": "Metres per second, bounded by what the walk clip can honestly depict. It covers 1.16 m/s, and past about 2.2x playback a walk cycle stops reading as walking, so 2.5 is the ceiling before the feet skate. Raise runSpeed once a real run clip is in remy.glb."
+    "_comment": "Metres per second, matched to the clips in remy.glb: the walk covers 1.19 m/s and the run 3.61, so both play near 1x and the feet do not skate. Backwards and sideways are scaled down in Walker.update to suit their own clips."
   },
 
   "portals": [
