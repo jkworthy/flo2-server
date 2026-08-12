@@ -1,6 +1,6 @@
 import { Room } from "colyseus";
 import { Player, ArcadiaState } from "./schema/Player.js";
-import { WORLD, clampToBounds, validateMove } from "../world/area.js";
+import { WORLD, clampToBounds, validateMove, ejectFromWalls } from "../world/area.js";
 import { nextSessionAt, meditationFor, arcadiaBonus } from "../world/sessions.js";
 
 export class ArcadiaRoom extends Room {
@@ -47,6 +47,15 @@ export class ArcadiaRoom extends Room {
       // grove gates is *session eligibility*, checked at the bell in
       // startSession(). Refusing to let someone sit by a wall served no purpose
       // and made the pose look broken outside one node.
+      //
+      // Space is found before the pose is set, though. Walking through another
+      // player is the point; sitting inside one is just two bodies in the same
+      // hole in the ground, and unlike walking it is a state you hold for the
+      // whole session.
+      if (want && !p.isMeditating) {
+        const spot = this.freeSeat(client.sessionId, p.x, p.y);
+        p.x = spot.x; p.y = spot.y;
+      }
       p.isMeditating = want;
       this.refreshParticipants();
     });
@@ -100,6 +109,52 @@ export class ArcadiaRoom extends Room {
     });
 
     this.scheduleNext();
+  }
+
+  /**
+   * The nearest place to sit that is not inside somebody else.
+   *
+   * Spirals outward from where they are standing, so the nudge is the smallest
+   * one that works - a player who sits somewhere empty does not move at all,
+   * and a player who sits on top of a group is placed just outside it rather
+   * than flung to the edge of the area.
+   *
+   * Only meditating players are considered. Someone walking past is about to be
+   * somewhere else, and treating them as an obstacle would make sitting in a
+   * busy avenue fail for no lasting reason.
+   */
+  freeSeat(sessionId, x, y) {
+    const SPACING = 1.5;                 // shoulder to shoulder, seated
+    const taken = [];
+    this.state.players.forEach((q, id) => {
+      if (id !== sessionId && q.isMeditating) taken.push(q);
+    });
+
+    const clear = (cx, cy) =>
+      taken.every((q) => Math.hypot(q.x - cx, q.y - cy) >= SPACING);
+
+    const fits = (cx, cy) => {
+      const b = clampToBounds(cx, cy);
+      if (Math.abs(b.x - cx) > 1e-6 || Math.abs(b.y - cy) > 1e-6) return null;
+      const e = ejectFromWalls(cx, cy);
+      if (Math.abs(e.x - cx) > 1e-6 || Math.abs(e.y - cy) > 1e-6) return null;
+      return clear(cx, cy) ? { x: cx, y: cy } : null;
+    };
+
+    const here = fits(x, y);
+    if (here) return here;
+
+    for (let ring = 1; ring <= 12; ring++) {
+      const r = ring * SPACING * 0.8;
+      const steps = Math.max(6, ring * 6);
+      for (let i = 0; i < steps; i++) {
+        // Offset each ring so the spots do not line up into spokes.
+        const a = (i / steps) * Math.PI * 2 + ring * 0.7;
+        const spot = fits(x + Math.cos(a) * r, y + Math.sin(a) * r);
+        if (spot) return spot;
+      }
+    }
+    return { x, y };                     // packed solid; sit where you stand
   }
 
   /* --- session scheduling ------------------------------------------------ */
