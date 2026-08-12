@@ -18,7 +18,16 @@
   "eye": 1.65,
   "spawn": { "x": 0, "y": -108, "heading": 1.5707963 },
 
-  "bounds": { "minX": -13.2, "maxX": 13.2, "minY": -142, "maxY": -3 },
+  "_bounds_comment": [
+    "Centred on the point the panorama was rendered from. A backdrop has no",
+    "parallax, so it is only truly correct from that one spot and degrades with",
+    "distance from it - walking 105m up the avenue meant the gate stayed exactly",
+    "as far away as when you started, and the walkable area simply ran out with",
+    "nothing there. A tight region around the render point keeps the illusion",
+    "intact and makes the edge symmetric instead of a surprise at one end.",
+    "This opens back up the moment the gate exists as real geometry."
+  ],
+  "bounds": { "minX": -13.2, "maxX": 13.2, "minY": -134, "maxY": -82 },
 
   "ground": { "colour": "#b9a888", "roughness": 0.96 },
 
@@ -28,16 +37,14 @@
     "_comment": "Rendered from this point; the further the player walks from it, the more the backdrop lies. Bounds are kept tight enough that it stays unnoticed."
   },
 
-  "walls": [
-    { "x": -15, "y": -20,    "w": 3, "d": 28.6, "h": 7.6 },
-    { "x":  15, "y": -20,    "w": 3, "d": 28.6, "h": 7.6 },
-    { "x": -15, "y": -55.6,  "w": 3, "d": 28.6, "h": 7.6 },
-    { "x":  15, "y": -55.6,  "w": 3, "d": 28.6, "h": 7.6 },
-    { "x": -15, "y": -91.2,  "w": 3, "d": 28.6, "h": 7.6 },
-    { "x":  15, "y": -91.2,  "w": 3, "d": 28.6, "h": 7.6 },
-    { "x": -15, "y": -126.8, "w": 3, "d": 28.6, "h": 7.6 },
-    { "x":  15, "y": -126.8, "w": 3, "d": 28.6, "h": 7.6 }
+  "_walls_comment": [
+    "Empty on purpose. These were untextured blockout boxes standing in front of",
+    "the same walls already painted into the backdrop - the avenue was being",
+    "drawn twice, once badly. The collision machinery that reads this stays in",
+    "place and is still covered by the tests, so real decimated wall geometry",
+    "drops straight back in here when it is exported from gate.blend."
   ],
+  "walls": [],
 
   "move": {
     "walkSpeed": 1.5,
