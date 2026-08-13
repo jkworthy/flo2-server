@@ -84,7 +84,7 @@ export class ArcadiaRoom extends Room {
     this.onMessage("chat", (client, msg) => {
       const p = this.state.players.get(client.sessionId);
       if (!p) return;
-      const text = String(msg?.text ?? "").trim().slice(0, 240);
+      const text = String(msg?.text ?? "").trim().slice(0, 55);
       if (!text) return;
 
       const now = Date.now();
@@ -103,8 +103,12 @@ export class ArcadiaRoom extends Room {
     this.onMessage("avatar", (client, msg) => {
       const p = this.state.players.get(client.sessionId);
       if (!p || !msg) return;
+      // avatarOutfit carries the whole wardrobe choice as JSON - nine slots
+      // and their garment ids - so it needs more room than a name. Still capped:
+      // it is echoed to every other player in the room.
+      const LIMIT = { avatarOutfit: 400 };
       for (const k of ["avatarBody","avatarHair","avatarOutfit","skinTone","hairColor","displayName"]) {
-        if (typeof msg[k] === "string" && msg[k].length <= 64) p[k] = msg[k];
+        if (typeof msg[k] === "string" && msg[k].length <= (LIMIT[k] ?? 64)) p[k] = msg[k];
       }
     });
 
@@ -254,6 +258,30 @@ export class ArcadiaRoom extends Room {
   /* --- lifecycle --------------------------------------------------------- */
 
   onJoin(client, options = {}) {
+    // One body per person.
+    //
+    // A reload does not always close the old connection cleanly, and until it
+    // times out the room still holds that session - so the player walks back in
+    // and stands next to themselves. Worse than a cosmetic double: the stale
+    // copy keeps whatever it joined with, so the two animate differently and it
+    // reads as one of them being broken rather than as one of them being old.
+    //
+    // Judged on firebaseUid, not on name: names are not unique, so matching on
+    // them would evict strangers who happened to share one.
+    const uid = options.firebaseUid || "";
+    if (uid) {
+      this.state.players.forEach((q, id) => {
+        if (id === client.sessionId || q.firebaseUid !== uid) return;
+        console.log(`[Arcadia] ${id} replaced by ${client.sessionId} (${uid})`);
+        this.state.players.delete(id);
+        this.lastMove.delete(id);
+        this.lastChat.delete(id);
+        if (this.session) this.session.eligible.delete(id);
+        const stale = this.clients.find((c) => c.sessionId === id);
+        if (stale) { try { stale.leave(1000); } catch { /* already gone */ } }
+      });
+    }
+
     // Start the movement clock at join. Leaving it unset made the elapsed time
     // on the very first move packet zero, which capped a player's opening step
     // at 0.4m - they appeared to wade out of spawn before walking normally.
