@@ -3,6 +3,44 @@ import { Player, ArcadiaState } from "./schema/Player.js";
 import { WORLD, clampToBounds, validateMove, ejectFromWalls, ejectFromSites } from "../world/area.js";
 import { nextSessionAt, meditationFor, arcadiaBonus } from "../world/sessions.js";
 
+/** Nobody stands closer than this to somebody already here, in metres. */
+const SPAWN_APART = 2.44;          // eight feet
+
+/**
+ * A spot at the spawn point that nobody is standing on.
+ *
+ * Everyone arriving at the same coordinate put two players inside one
+ * body-width, which reads as a rendering fault rather than as two people. This
+ * walks outward in rings until it finds clear ground - a ring at a time, eight
+ * points around each - so the first arrival gets the exact spawn and later ones
+ * fan out around it in a way that still looks deliberate.
+ *
+ * Each ring is rotated half a step off the one inside it, or the points line up
+ * into spokes and a busy room grows arms.
+ *
+ * Falls back to the spawn point itself after the last ring. A room crowded
+ * enough to exhaust six rings has bigger problems than overlap, and refusing to
+ * place somebody is worse than placing them badly.
+ */
+function freeSpawn(players) {
+  const taken = [];
+  players.forEach((q) => taken.push([q.x, q.y]));
+  const clear = (x, y) => taken.every(
+    ([px, py]) => Math.hypot(x - px, y - py) >= SPAWN_APART);
+
+  const ox = WORLD.spawn.x, oy = WORLD.spawn.y;
+  if (clear(ox, oy)) return [ox, oy];
+  for (let ring = 1; ring <= 6; ring++) {
+    const r = SPAWN_APART * ring;
+    for (let i = 0; i < 8; i++) {
+      const a = (i / 8) * Math.PI * 2 + (ring % 2) * (Math.PI / 8);
+      const x = ox + Math.cos(a) * r, y = oy + Math.sin(a) * r;
+      if (clear(x, y)) return [x, y];
+    }
+  }
+  return [ox, oy];
+}
+
 export class ArcadiaRoom extends Room {
   onCreate() {
     this.state = new ArcadiaState();
@@ -290,7 +328,7 @@ export class ArcadiaRoom extends Room {
     p.playerId = client.sessionId;
     p.firebaseUid = options.firebaseUid || "";
     p.displayName = (options.displayName || "").slice(0, 64);
-    const spawn = clampToBounds(WORLD.spawn.x, WORLD.spawn.y);
+    const spawn = clampToBounds(...freeSpawn(this.state.players));
     p.x = spawn.x; p.y = spawn.y;
     p.heading = WORLD.spawn.heading;
     p.speed = 0;

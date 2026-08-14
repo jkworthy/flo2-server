@@ -16,10 +16,10 @@
   ],
   "eye": 1.65,
   "spawn": {
-    "x": 0,
-    "y": -52,
-    "heading": 1.5707963267948966,
-    "_comment": "Outside the south gate, facing up the colonnade to the shrine. Spawning at 0,0 put every arriving player inside the shrine itself."
+    "x": 110.0,
+    "y": 0.0,
+    "heading": 3.141592653589793,
+    "_comment": "East of the ruined city, on the ground the road to the sacred place will run over, facing west into the ruins. It was at (0,-52), which put arrivals inside the shrine - and once the ruins had colliders that stopped being a cosmetic problem and started being a cell."
   },
   "bounds": {
     "minX": -190,
@@ -33,8 +33,8 @@
     "roughness": 0.97
   },
   "sky": {
-    "_comment": "JGAssets Desert Skybox Pack, sky 3 - the brightest and least saturated of the six, so it lights the stone without drowning the sand in orange.",
-    "image": "sky/desert.webp"
+    "_comment": "Trying the free sci-fi panorama. 2048x1024 equirectangular - half the resolution of the desert sky it replaces, and it carries a painted landscape in its lower half that has to sit behind our real dunes.",
+    "image": "sky/scifi.webp"
   },
   "sites": [
     {
@@ -45,6 +45,24 @@
       "heading": 0,
       "radius": 0,
       "_comment": "Thirty-four kit pieces laid out as one city: shrine and altar at the centre, a colonnade in from the south where players spawn, buildings scattered off-square, walls fragmenting outward and rubble half-buried at the edges. See art/build_ruins.py."
+    },
+    {
+      "id": "village",
+      "model": "ruins/village.glb",
+      "x": 0,
+      "y": 0,
+      "heading": 0,
+      "radius": 0,
+      "_comment": "Nine buildings assembled from the EmbersStorm Mediterranean kit and standing east of the desert ruin, about a minute's walk away. The kit ships no composed scene - its demo scene is a parts catalogue, each of the 92 modules laid out once in rows - so these are authored in art/build_village.py. Positions are baked into the glb, hence 0,0 here."
+    },
+    {
+      "id": "field",
+      "model": "ruins/field.glb",
+      "x": 0,
+      "y": 0,
+      "heading": 0,
+      "radius": 0,
+      "_comment": "Twenty-four structures from Stein's Ruins Ancient City, scattered across the plain around the desert city so the horizon keeps offering another broken wall. Each decimated from up to 40k triangles to 3k - they are read as silhouettes across sand. Positions baked into the glb, hence 0,0."
     }
   ],
   "_sites_comment": "The five sacred monuments are parked, not deleted - the playable area is the Ancient Desert Ruin pack for now, to see what that aesthetic gives. Restore by moving sites_parked back to sites.",
@@ -57,8 +75,8 @@
   },
   "portals": [],
   "horizon": {
-    "_comment": "Alpine Mountains, six terrain tiles converted out of ASCII FBX, decimated from 55k to 9k each and ringed at 620m - well beyond the 190m bounds, so they read as distance rather than as a wall.",
-    "model": "horizon/ring.glb"
+    "model": null,
+    "_comment": "No ring. Six decimated alpine tiles standing at 620m read as grey lumps no matter how they were lit or textured - snowy peaks around a desert was the wrong idea before it was a bad execution. The sky closes the horizon on its own until dunes replace it."
   },
   "sites_parked": [
     {
