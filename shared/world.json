@@ -3,7 +3,6 @@
   "name": "The Open Plain",
   "free": true,
   "requiresSensor": false,
-
   "_comment": [
     "The open area, rebuilt as real geometry. There is no panorama any more:",
     "a backdrop is only correct from the single point it was rendered from, so",
@@ -15,67 +14,102 @@
     "Site positions are laid out so no two are in line from the spawn point -",
     "each one has to be walked to, and walking to one puts another in view."
   ],
-
   "eye": 1.65,
-  "spawn": { "x": 0, "y": 0, "heading": 1.5707963 },
-
-  "bounds": { "minX": -190, "maxX": 190, "minY": -190, "maxY": 190 },
-
-  "ground": { "colour": "#b9a888", "roughness": 0.96 },
-
+  "spawn": {
+    "x": 0,
+    "y": -52,
+    "heading": 1.5707963267948966,
+    "_comment": "Outside the south gate, facing up the colonnade to the shrine. Spawning at 0,0 put every arriving player inside the shrine itself."
+  },
+  "bounds": {
+    "minX": -190,
+    "maxX": 190,
+    "minY": -190,
+    "maxY": 190
+  },
+  "ground": {
+    "_comment": "The pack's own desert terrain, run to the edges of the 2400m plane so the sand does not stop before the mountains do.",
+    "colour": "#b09068",
+    "roughness": 0.97
+  },
   "sky": {
-    "_comment": "Desert Skybox Pack, sky 3 - the brightest and least saturated of the six, so it lights the stone without drowning the sand in orange. 8K down to 4K: it is a sky, and nobody inspects it. It doubles as the environment map, so the geometry is lit by the sky actually behind it.",
+    "_comment": "JGAssets Desert Skybox Pack, sky 3 - the brightest and least saturated of the six, so it lights the stone without drowning the sand in orange.",
     "image": "sky/desert.webp"
   },
-
   "sites": [
     {
-      "id": "tulum", "label": "Tulum", "model": "sites/tulum.glb",
-      "x": 0, "y": 74, "heading": 3.14159,
-      "radius": 13.0, "height": 8.0
-    },
-    {
-      "id": "stonehenge", "label": "Stonehenge", "model": "sites/stonehenge.glb",
-      "x": -86, "y": 30, "heading": 0.4,
-      "radius": 0, "height": 6.0
-    },
-    {
-      "id": "moai", "label": "Moai", "model": "sites/moai.glb",
-      "x": 46, "y": -58, "heading": 2.3,
-      "radius": 2.2, "height": 6.5
-    },
-    {
-      "id": "palenque", "label": "Palenque", "model": "sites/palenque.glb",
-      "x": 104, "y": 84, "heading": 3.6,
-      "radius": 21.0, "height": 18.0
-    },
-    {
-      "id": "buddha", "label": "Buddha", "model": "sites/buddha.glb",
-      "x": -58, "y": -96, "heading": 0.9,
-      "radius": 5.0, "height": 9.0
+      "id": "ruins",
+      "model": "ruins/city.glb",
+      "x": 0,
+      "y": 0,
+      "heading": 0,
+      "radius": 0,
+      "_comment": "Thirty-four kit pieces laid out as one city: shrine and altar at the centre, a colonnade in from the south where players spawn, buildings scattered off-square, walls fragmenting outward and rubble half-buried at the edges. See art/build_ruins.py."
     }
   ],
-
-  "_sites_comment": [
-    "radius is the circle you cannot walk into, taken from each model's measured",
-    "footprint and then pulled in a little - the footprint is a box round the",
-    "widest part, and blocking on that would stop you well short of anything you",
-    "can see.",
-    "",
-    "Stonehenge is deliberately 0. It is a ring 80m across that you are meant to",
-    "walk into and stand inside; a circle round it would put an invisible dome",
-    "over the one site whose whole point is the space in the middle. Clipping a",
-    "stone is a far smaller sin than being unable to reach the centre."
-  ],
-
+  "_sites_comment": "The five sacred monuments are parked, not deleted - the playable area is the Ancient Desert Ruin pack for now, to see what that aesthetic gives. Restore by moving sites_parked back to sites.",
   "walls": [],
-
   "move": {
     "walkSpeed": 1.5,
     "runSpeed": 3.6,
     "turnRate": 3.2,
     "_comment": "Metres per second, matched to the clips in remy.glb: the walk covers 1.16 m/s and the run 3.44, so both play near 1x and the feet do not skate. Backwards and sideways are scaled down in Walker.update to suit their own clips."
   },
-
-  "portals": []
+  "portals": [],
+  "horizon": {
+    "_comment": "Alpine Mountains, six terrain tiles converted out of ASCII FBX, decimated from 55k to 9k each and ringed at 620m - well beyond the 190m bounds, so they read as distance rather than as a wall.",
+    "model": "horizon/ring.glb"
+  },
+  "sites_parked": [
+    {
+      "id": "tulum",
+      "label": "Tulum",
+      "model": "sites/tulum.glb",
+      "x": 0,
+      "y": 74,
+      "heading": 3.14159,
+      "radius": 13.0,
+      "height": 8.0
+    },
+    {
+      "id": "stonehenge",
+      "label": "Stonehenge",
+      "model": "sites/stonehenge.glb",
+      "x": -86,
+      "y": 30,
+      "heading": 0.4,
+      "radius": 0,
+      "height": 6.0
+    },
+    {
+      "id": "moai",
+      "label": "Moai",
+      "model": "sites/moai.glb",
+      "x": 46,
+      "y": -58,
+      "heading": 2.3,
+      "radius": 2.2,
+      "height": 6.5
+    },
+    {
+      "id": "palenque",
+      "label": "Palenque",
+      "model": "sites/palenque.glb",
+      "x": 104,
+      "y": 84,
+      "heading": 3.6,
+      "radius": 21.0,
+      "height": 18.0
+    },
+    {
+      "id": "buddha",
+      "label": "Buddha",
+      "model": "sites/buddha.glb",
+      "x": -58,
+      "y": -96,
+      "heading": 0.9,
+      "radius": 5.0,
+      "height": 9.0
+    }
+  ]
 }
