@@ -30,7 +30,14 @@ function freeSpawn(players) {
 
   const ox = WORLD.spawn.x, oy = WORLD.spawn.y;
   if (clear(ox, oy)) return [ox, oy];
-  for (let ring = 1; ring <= 6; ring++) {
+  // Three rings, not six.
+  //
+  // The spawn has 24.7m of clear ground around it, and six rings at four metres
+  // reach 24m - the outermost ring lands 1.3m from a wall. The fan-out existed
+  // to stop people overlapping and was quietly able to put them inside masonry
+  // instead, which is a worse answer to a smaller problem. Three rings reach
+  // 12m and the worst point on them is 13.3m clear.
+  for (let ring = 1; ring <= 3; ring++) {
     const r = SPAWN_APART * ring;
     for (let i = 0; i < 8; i++) {
       const a = (i / 8) * Math.PI * 2 + (ring % 2) * (Math.PI / 8);
