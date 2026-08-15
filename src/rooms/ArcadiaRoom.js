@@ -4,7 +4,7 @@ import { WORLD, clampToBounds, validateMove, ejectFromWalls, ejectFromSites } fr
 import { nextSessionAt, meditationFor, arcadiaBonus } from "../world/sessions.js";
 
 /** Nobody stands closer than this to somebody already here, in metres. */
-const SPAWN_APART = 2.44;          // eight feet
+const SPAWN_APART = 4.0;           // was eight feet, which still read as crowded
 
 /**
  * A spot at the spawn point that nobody is standing on.

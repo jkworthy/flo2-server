@@ -63,6 +63,42 @@
       "heading": 0,
       "radius": 0,
       "_comment": "Twenty-four structures from Stein's Ruins Ancient City, scattered across the plain around the desert city so the horizon keeps offering another broken wall. Each decimated from up to 40k triangles to 3k - they are read as silhouettes across sand. Positions baked into the glb, hence 0,0."
+    },
+    {
+      "id": "sacred",
+      "model": "ruins/sacred.glb",
+      "x": 0,
+      "y": 0,
+      "heading": 0,
+      "radius": 0,
+      "_comment": "The Sacred Place Universe kit, composed here - the pack ships parts and a demo scene holding only animated cloud effects, which are a Unity shader and do not travel. A raised platform at (165,0), ringed with twelve columns, arch facing the ruins, sphere over the centre. Symmetrical and intact where the ruins are scattered and broken: they are where people have been, this is where they go."
+    },
+    {
+      "id": "road",
+      "model": "ruins/road.glb",
+      "x": 0,
+      "y": 0,
+      "heading": 0,
+      "radius": 0,
+      "_comment": "Stones from the ruin pack pressed into the sand between the city and the sacred platform. Two edge rows and a scatter between, wandering slightly - a path laid straight across open ground looks surveyed."
+    },
+    {
+      "id": "districts",
+      "model": "ruins/districts.glb",
+      "x": 0,
+      "y": 0,
+      "heading": 0,
+      "radius": 0,
+      "_comment": "The ruins level, organised into districts so a search is navigable: a necropolis north-west, a ring of standing stones north, a colonnade east pointing at the sacred place, overgrown ruins south-west, and 8m archway pillars scattered as beacons so no direction is featureless. A player who cannot tell one stretch of broken wall from another cannot remember where they have already looked."
+    },
+    {
+      "id": "relief",
+      "model": "ruins/relief.glb",
+      "x": 0,
+      "y": 0,
+      "heading": 0,
+      "radius": 0,
+      "_comment": "A carved relief on the shrine wall, facing the road in from the east. Decimated 457,514 triangles to 8,000 - it was a sculpt export priced for a close-up."
     }
   ],
   "_sites_comment": "The five sacred monuments are parked, not deleted - the playable area is the Ancient Desert Ruin pack for now, to see what that aesthetic gives. Restore by moving sites_parked back to sites.",
