@@ -16,10 +16,10 @@
   ],
   "eye": 1.65,
   "spawn": {
-    "x": 110.0,
-    "y": -35.0,
-    "heading": 2.0707963267948966,
-    "_comment": "Open sand 35m south of the colonnade, facing north-west into the ruined city with the road and the sacred place to the right. It was at (110,0), which sat in the middle of the avenue and 0.8m from a road stone - fine while those two models were silently failing to load, and a cell the moment they worked. Measured clearance here is 24.7m against every placed mesh in the level."
+    "x": 173.0,
+    "y": 32.0,
+    "heading": -2.6516,
+    "_comment": "Inside the Xen Center, which is now the safe zone and the hub. It was at (110,-35) - chosen when the XC meant nothing, and 65m outside it, which meant the dragon launched on every single join before the player had moved. Measured clearance here is 29.3m against every placed mesh, on a floor at 0.00. Facing out toward the ruins. See art/xc_spawn.mjs."
   },
   "bounds": {
     "minX": -190,
@@ -90,15 +90,6 @@
       "heading": 0,
       "radius": 0,
       "_comment": "The ruins level, organised into districts so a search is navigable: a necropolis north-west, a ring of standing stones north, a colonnade east pointing at the sacred place, overgrown ruins south-west, and 8m archway pillars scattered as beacons so no direction is featureless. A player who cannot tell one stretch of broken wall from another cannot remember where they have already looked."
-    },
-    {
-      "id": "relief",
-      "model": "ruins/relief.glb",
-      "x": 0,
-      "y": 0,
-      "heading": 0,
-      "radius": 0,
-      "_comment": "A carved relief on the shrine wall, facing the road in from the east. Decimated 457,514 triangles to 8,000 - it was a sculpt export priced for a close-up."
     }
   ],
   "_sites_comment": "The five sacred monuments are parked, not deleted - the playable area is the Ancient Desert Ruin pack for now, to see what that aesthetic gives. Restore by moving sites_parked back to sites.",
