@@ -17,9 +17,9 @@
   "eye": 1.65,
   "spawn": {
     "x": 110.0,
-    "y": 0.0,
-    "heading": 3.141592653589793,
-    "_comment": "East of the ruined city, on the ground the road to the sacred place will run over, facing west into the ruins. It was at (0,-52), which put arrivals inside the shrine - and once the ruins had colliders that stopped being a cosmetic problem and started being a cell."
+    "y": -35.0,
+    "heading": 2.0707963267948966,
+    "_comment": "Open sand 35m south of the colonnade, facing north-west into the ruined city with the road and the sacred place to the right. It was at (110,0), which sat in the middle of the avenue and 0.8m from a road stone - fine while those two models were silently failing to load, and a cell the moment they worked. Measured clearance here is 24.7m against every placed mesh in the level."
   },
   "bounds": {
     "minX": -190,
